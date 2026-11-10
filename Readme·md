@@ -1,0 +1,73 @@
+# RIO — AI Voice Call Assistant
+
+RIO is a voice-to-voice AI assistant. You speak, RIO listens, thinks with the Groq API, and answers out loud — with an animated avatar that shows whether RIO is **idle, listening, thinking or speaking**.
+
+## Features
+- Phone-style call screen: Start Call / End Call, call timer, mic and speaker status
+- Animated CSS avatar (glow rings, listening mic pulse, thinking orbit, speaking waves)
+- Speech-to-text with Groq Whisper, replies from a Groq chat model, natural neural text-to-speech
+- Short, conversational answers and per-session memory (with a Clear Conversation button)
+- Mute mic / mute speaker, replay last answer, friendly error messages
+- API key stored in Streamlit Secrets, never in the code
+
+## How it works
+`Microphone → st.audio_input → Groq Whisper → Groq chat (openai/gpt-oss-20b) → edge-tts (gTTS fallback) → Speaker`
+
+**Limitation:** Streamlit cannot stream microphone audio continuously, so RIO is *turn-based push-to-talk*: press the mic, speak, press stop, hear RIO's answer, repeat. This also guarantees RIO's own voice is never fed back into speech recognition. Use headphones for the best experience.
+
+## Tech stack
+Python, Streamlit, Groq SDK (chat + Whisper), edge-tts, gTTS.
+
+## Installation
+```bash
+git clone YOUR_GITHUB_REPOSITORY_URL
+cd RIO-AI-Voice-Assistant
+python -m venv .venv && source .venv/bin/activate   # Windows: .venv\Scripts\activate
+pip install -r requirements.txt
+```
+
+## Groq API setup
+1. Create a free key at https://console.groq.com/keys
+2. Copy `.streamlit/secrets.toml.example` to `.streamlit/secrets.toml` and paste your key:
+```toml
+GROQ_API_KEY = "gsk_..."
+```
+`secrets.toml` is git-ignored. Never commit it.
+
+## Run locally
+```bash
+streamlit run app.py
+```
+Allow microphone access when the browser asks (`localhost` is allowed over HTTP).
+
+## Change the model
+Edit the configuration block at the top of `app.py` (`GROQ_MODEL`, `STT_MODELS`, `TTS_VOICE`). Groq retires models regularly — check https://console.groq.com/docs/deprecations. (`llama-3.1-8b-instant` was shut down for free/developer tiers on 16 Aug 2026.)
+
+## Push to GitHub
+```bash
+git init
+git add .
+git commit -m "Initial RIO AI Voice Assistant"
+git branch -M main
+git remote add origin YOUR_GITHUB_REPOSITORY_URL
+git push -u origin main
+```
+
+## Deploy on Streamlit Community Cloud
+1. Open https://share.streamlit.io and sign in with GitHub.
+2. Click **Create app** and select your RIO repository, branch `main`.
+3. Set the main file path to `app.py` and click **Deploy**.
+4. Open **Settings → Secrets** and add:
+```toml
+GROQ_API_KEY = "YOUR_REAL_GROQ_API_KEY"
+```
+5. Save, then reboot the app.
+
+## Troubleshooting
+- **"Groq API key not found"** – add `GROQ_API_KEY` to `.streamlit/secrets.toml` or Cloud Secrets.
+- **"Couldn't connect"** – the key is invalid/revoked; create a new one.
+- **"Model isn't available"** – change `GROQ_MODEL` to a current model.
+- **No microphone** – allow mic permission in the browser; the site must use HTTPS (Cloud does).
+- **No sound** – browsers may block autoplay; use the "Replay" player and check "Mute speaker".
+- **Voice falls back to a different sound** – edge-tts was unreachable and gTTS was used instead.
+- **Rate limit** – wait a minute and try again.
