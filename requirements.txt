@@ -1,0 +1,5 @@
+streamlit==1.50.0
+groq==0.33.0
+streamlit-webrtc==0.63.11
+av==16.0.1
+numpy==2.2.6
