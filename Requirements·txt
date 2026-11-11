@@ -1,2 +1,5 @@
 streamlit
 groq
+streamlit-webrtc
+av
+numpy
